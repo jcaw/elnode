@@ -57,7 +57,6 @@
 (require 'mail-parse) ; for mail-header-parse-content-type
 (require 'url-util)
 (require 'kv)
-(require 'assoc) ; for aget - which we could move to kv?
 (require 's)
 (require 'dash)
 (require 'rx)
@@ -1731,8 +1730,8 @@ A is considered the priority (its elements go in first)."
            (let* ((cde
                    (mail-header-parse-content-disposition
                     (kva "content-disposition" alist)))
-                  (name (aget (cdr cde) 'name))
-                  (filename (aget (cdr cde) 'filename))
+                  (name (alist-get 'name (cdr cde)))
+                  (filename (alist-get 'filename (cdr cde)))
                   (pt (point)))
              ;; Find the next end point
              (setq next-boundary
@@ -1747,7 +1746,7 @@ A is considered the priority (its elements go in first)."
 
 (defun elnode--http-post-mp-decode (httpcon parsed-content-type)
   "Decode the HTTP POST multipart thing on HTTPCON."
-  (let ((boundary (aget (cdr parsed-content-type) 'boundary))
+  (let ((boundary (alist-get 'boundary (cdr parsed-content-type)))
         (buf (process-buffer httpcon))
         (hdr-end-pt (process-get httpcon :elnode-header-end)))
     (elnode--http-mp-decode buf hdr-end-pt boundary)))
@@ -3765,7 +3764,7 @@ the key \"token\" with a user's token.  Whatever else the alist
 contains is irrelevant."
   (let ((user (db-get username database)))
     (when user
-      (aget user "token"))))
+      (alist-get "token" user nil nil 'equal))))
 
 (defun* elnode-auth--make-login-handler
     (&key
